@@ -2,7 +2,7 @@ import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState } from "react";
-const websiteURL = import.meta.env?.VITE_WEBSITE_URL || "http://localhost:8080";
+const websiteURL = import.meta.env.VITE_WEBSITE_URL;
 export default function Home() {
   const [code, setCode] = useState<string>("");
   const [error, setError] = useState<string>("");
@@ -30,7 +30,7 @@ export default function Home() {
             headers.set("Content-Type", "application/json");
             try {
               setIsLoading(true);
-              const response = await fetch("http://localhost:8080/create", {
+              const response = await fetch("/create", {
                 method: "POST",
                 body: JSON.stringify({
                   url: formData.get("url"),

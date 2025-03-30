@@ -1,34 +1,101 @@
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
-
+import { useEffect, useRef, useState } from "react";
+const websiteURL = import.meta.env?.VITE_WEBSITE_URL || "http://localhost:8080";
 export default function Home() {
-  const [validURL, setIsValidURL] = useState<boolean>(false);
+  const [code, setCode] = useState<string>("");
+  const [error, setError] = useState<string>("");
+  const [loading, setIsLoading] = useState<boolean>(false);
+  const [copied, setCopied] = useState<boolean>(false);
+  const url = code ? websiteURL + "/" + code : undefined;
+  const inputRef = useRef<HTMLInputElement>(null);
+  console.debug(import.meta.env);
+  useEffect(() => {
+    if (url && inputRef.current) inputRef.current.value = url;
+  }, [url]);
+
   return (
     <Layout>
-      <div className="grid items-center justify-items-center min-h-full mt-56">
+      <div className="grid items-center justify-items-center min-h-full mt-48">
         <h1 className="!mb-1">Shortly</h1>
         <p>A simple fast URL shortener</p>
-        <div className="flex max-sm:flex-col gap-1 min-w-full justify-center px-5">
+        <form
+          className="flex max-sm:flex-col gap-1 min-w-full justify-center px-5"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target as HTMLFormElement);
+            console.debug("form submit", e);
+            const headers = new Headers();
+            headers.set("Content-Type", "application/json");
+            try {
+              setIsLoading(true);
+              const response = await fetch("http://localhost:8080/create", {
+                method: "POST",
+                body: JSON.stringify({
+                  url: formData.get("url"),
+                }),
+                headers: headers,
+              });
+              if (response.ok) {
+                const body = await response.json();
+                setCode(body.code);
+              } else setError(response.statusText);
+            } catch (error) {
+              console.debug(error);
+            } finally {
+              setIsLoading(false);
+            }
+          }}
+        >
           <Input
             type="url"
+            ref={inputRef}
+            name="url"
+            autoComplete="off"
+            required
+            onChange={(e) => {
+              if (url) {
+                if (e.target.value.includes(url))
+                  e.target.value = e.target.value.replace(url, "");
+                else e.target.value = "";
+              }
+              setCode("");
+            }}
+            onClick={(e) => {
+              if (url) (e.target as HTMLInputElement).select();
+            }}
             className="max-w-xl grow"
             placeholder="https://example.com/very/long/url/to/shorten"
-            onChange={(e) => {
-              setIsValidURL(e.target.checkVisibility());
-            }}
           />
-          <Button
-            type="button"
-            variant="default"
-            className="cursor-pointer disabled:opacity-70"
-            disabled={!validURL}
-            onClick={() => {}}
-          >
-            Shorten
-          </Button>
-        </div>
+          {!url ? (
+            <Button
+              type="submit"
+              variant="default"
+              className="cursor-pointer disabled:opacity-70"
+              disabled={loading}
+              onClick={() => {}}
+            >
+              {!loading ? "Shorten" : "Loading..."}
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="default"
+              className="cursor-pointer disabled:opacity-70"
+              onClick={() => {
+                navigator.clipboard.writeText(url).then().catch();
+                setCopied(true);
+                setTimeout(() => {
+                  setCopied(false);
+                }, 1500);
+              }}
+            >
+              {!copied ? "Copy" : "Copied!"}
+            </Button>
+          )}
+        </form>
+        <p className="text-red-500">{error}</p>
       </div>
     </Layout>
   );

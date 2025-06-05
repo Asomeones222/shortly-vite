@@ -30,13 +30,12 @@ export default function Home() {
             headers.set("Content-Type", "application/json");
             try {
               setIsLoading(true);
-              const response = await fetch("/create", {
-                method: "POST",
-                body: JSON.stringify({
-                  url: formData.get("url"),
-                }),
-                headers: headers,
-              });
+              const response = await fetch(
+                `/create?url=${formData.get("url")}`,
+                {
+                  method: "POST",
+                }
+              );
               if (response.ok) {
                 const body = await response.json();
                 setCode(body.code);

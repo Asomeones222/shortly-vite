@@ -45,11 +45,11 @@ interface NavbarProps {
 
 export const Navbar = ({
   menu = [
-    { title: "Home", url: "#" },
-    {
-      title: "Pricing",
-      url: "#",
-    },
+    // { title: "Home", url: "#" },
+    // {
+    //   title: "Pricing",
+    //   url: "#",
+    // },
   ],
   auth = {
     login: { title: "Login", url: "#" },

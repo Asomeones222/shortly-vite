@@ -18,7 +18,9 @@ export default function Home() {
   return (
     <Layout>
       <div className="grid items-center justify-items-center min-h-full mt-48">
-        <h1 className="!mb-1">Shortly</h1>
+        <h1 className="!mb-1">
+          Mr.<span className="ml-1">Clip</span>
+        </h1>
         <p>A simple fast URL shortener</p>
         <form
           className="flex max-sm:flex-col gap-1 min-w-full justify-center px-5"
@@ -30,6 +32,7 @@ export default function Home() {
             headers.set("Content-Type", "application/json");
             try {
               setIsLoading(true);
+              setError("");
               const response = await fetch(
                 `/create?url=${formData.get("url")}`,
                 {
@@ -39,7 +42,11 @@ export default function Home() {
               if (response.ok) {
                 const body = await response.json();
                 setCode(body.code);
-              } else setError(response.statusText);
+              } else {
+                const errorMessage =
+                  (await response.text()) || response.statusText;
+                setError(errorMessage);
+              }
             } catch (error) {
               console.debug(error);
             } finally {
@@ -60,6 +67,7 @@ export default function Home() {
                 else e.target.value = "";
               }
               setCode("");
+              setError("");
             }}
             onClick={(e) => {
               if (url) (e.target as HTMLInputElement).select();
